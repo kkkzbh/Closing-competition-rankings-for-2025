@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2025 河北大学程序设计训练营 — 结营竞赛榜单</title>
+  <style>
+    /* 基于 XCPCIO 的颜色主题 */
+    :root {
+      --global-background: #fff;
+      --theme-status-accepted: #37da58;
+      --theme-status-wrong-answer: #ff4545;
+      --theme-standings-correct: #e1ffb5;
+      --theme-standings-incorrect: #ffd0d0;
+      --theme-standings-first-solve: #3db03d;
+      
+      /* 简化为白灰交替 */
+      --theme-standings-white: #ffffff;
+      --theme-standings-gray: #f8f9fa;
+      
+      --theme-special-highlight: #e8e5ff;
+      
+      --font-zh: "PingFang SC", "Microsoft YaHei", "SimSun", sans-serif;
+      --font-mono: "Monaco", "Consolas", "Courier New", monospace;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    html, body { 
+      background: var(--global-background); 
+      color: #333;
+      margin: 0; 
+      padding: 0; 
+      font-family: var(--font-zh);
+    }
+    
+    body {
+      padding: 20px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .header { 
+      text-align: center; 
+      margin-bottom: 20px; 
+      padding: 15px 0;
+    }
+    
+    .title { 
+      font-size: 22px; 
+      font-weight: 700; 
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .legend { 
+      color: #666; 
+      font-size: 12px; 
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .legend-box {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      text-align: center;
+      min-width: 50px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .legend-box.first-solve {
+      background-color: #3DB03D;
+      color: #000;
+    }
+    
+    .legend-box.correct {
+      background-color: var(--theme-standings-correct);
+      color: #000;
+    }
+    
+    .legend-box.incorrect {
+      background-color: var(--theme-standings-incorrect);
+      color: #000;
+    }
+    
+    .legend-box.empty {
+      background-color: transparent;
+      color: #666;
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+    
+    .legend-box.special-student {
+      background-color: var(--theme-special-highlight);
+      color: #000;
+    }
+
+    .table-wrap { 
+      overflow-x: auto; 
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    /* 采用 XCPCIO 的表格样式 */
+    table.standings { 
+      width: 100%; 
+      border-collapse: separate;
+      border-spacing: 2px; /* 增加单元格间距 */
+      min-width: 1200px;
+      font-family: var(--font-mono);
+      text-align: center;
+      margin: 0;
+      padding: 4px; /* 表格内边距 */
+      background-color: #f8f9fa; /* 浅灰背景突出间隔 */
+    }
+    
+    /* XCPCIO 风格的表头 */
+    .standings thead th {
+      position: sticky; 
+      top: 0; 
+      z-index: 10;
+      background-color: #f5f5d5;
+      font-weight: 600; 
+      padding: 8px 6px; 
+      border: 0;
+      margin: 1px;
+      white-space: nowrap;
+      color: #333;
+      font-size: 12px;
+      font-family: var(--font-zh);
+    }
+    
+    /* XCPCIO 风格的单元格 */
+    .standings td {
+      font-size: 12px;
+      border-width: 0px;
+      margin: 1px;
+      padding: 1px !important;
+      box-sizing: content-box !important;
+      border: 1px solid #fff; /* 白色边框作为间隔 */
+    }
+    
+    /* 交替行背景 - 白灰交替 */
+    .standings tbody tr:nth-child(odd) td { background-color: var(--theme-standings-white); }
+    .standings tbody tr:nth-child(even) td { background-color: var(--theme-standings-gray); }
+    
+    /* 10位学号特殊高亮 - 李星照同款背景色 */
+    .standings tbody tr.special-highlight td { 
+      background-color: var(--theme-special-highlight) !important; 
+    }
+    
+    .standings tbody tr:hover td { background-color: #e3f2fd !important; }
+
+    /* 列宽设置 */
+    .col-rank { width: 3rem; font-weight: bold; }
+    .col-id   { width: 8rem; font-family: var(--font-mono); }
+    .col-name { width: 6rem; font-family: var(--font-zh); }
+    .col-solved { width: 3rem; font-weight: bold; }
+    .col-penalty { width: 4rem; }
+    .col-prob { 
+      width: 4rem; 
+      padding: 2px !important; 
+      border: 2px solid #fff; /* 题目列更粗的白边 */
+    }
+
+    /* XCPCIO 风格的题目状态单元格 */
+    .prob-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      min-height: 32px;
+      font-weight: bold;
+      margin: 1px; /* 内部间距 */
+      border-radius: 2px; /* 轻微圆角 */
+      width: 100%;
+      height: 100%;
+      padding: 4px;
+    }
+    
+    /* 直接渲染整个单元格颜色 */
+    .prob-cell.correct { 
+      background-color: var(--theme-standings-correct);
+      color: #000;
+    }
+    
+    .prob-cell.incorrect { 
+      background-color: var(--theme-standings-incorrect);
+      color: #000;
+    }
+    
+    .prob-cell.first-solve {
+      background-color: #3DB03D;
+      color: #000 !important; /* 黑色文字 */
+      font-weight: bold;
+    }
+    
+    .prob-cell.first-solve .time-display {
+      color: #000 !important; /* 罚时也是黑色 */
+      font-weight: bold; /* 罚时加粗 */
+    }
+    
+    .prob-cell.empty {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .time-display {
+      font-size: 9px;
+      color: #666;
+      font-family: var(--font-mono);
+      margin-top: 1px;
+      line-height: 1;
+      font-weight: bold; /* 所有罚时都加粗显示 */
+    }
+
+    @media (max-width: 1200px) {
+      body { 
+        padding: 10px; 
+        font-size: 12px; 
+      }
+      
+      .title { 
+        font-size: 18px; 
+      }
+      
+      .legend {
+        font-size: 10px;
+        gap: 10px;
+      }
+      
+      .legend-box {
+        font-size: 10px;
+        padding: 3px 6px;
+        min-width: 40px;
+      }
+      
+      .col-id { 
+        width: 6rem; 
+        font-size: 10px;
+      }
+      
+      .col-name { 
+        width: 5rem; 
+      }
+      
+      .col-prob { 
+        width: 3rem; 
+      }
+      
+      .standings { 
+        min-width: 800px; 
+      }
+    }
+
+    @media print {
+      body { 
+        padding: 0; 
+        font-size: 10px; 
+      }
+      
+      .table-wrap { 
+        border: none; 
+        box-shadow: none;
+      }
+      
+      .standings thead th { 
+        background: #f5f5d5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .correct { 
+        background-color: var(--theme-standings-correct) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .incorrect { 
+        background-color: var(--theme-standings-incorrect) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .first-solve { 
+        background-color: #3DB03D !important;
+        color: #000 !important; /* 打印时也是黑色文字 */
+        font-weight: bold !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .first-solve .time-display { 
+        color: #000 !important; /* 打印时罚时也是黑色加粗 */
+        font-weight: bold !important;
+      }
+      
+      .standings tbody tr:nth-child(odd) td { 
+        background-color: var(--theme-standings-white) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .standings tbody tr:nth-child(even) td { 
+        background-color: var(--theme-standings-gray) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .standings tbody tr.special-highlight td { 
+        background-color: var(--theme-special-highlight) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">2025 河北大学程序设计训练营 — 结营竞赛榜单</div>
+    <div class="legend">
+      <span class="legend-item">
+        <span class="legend-box first-solve">首个通过</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-box correct">通过</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-box incorrect">尝试失败</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-box empty">未提交</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-box special-student">保定学院</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="standings" class="standings">
+      <thead>
+        <tr>
+          <th class="col-rank">名次</th>
+          <th class="col-id">学号/邮箱</th>
+          <th class="col-name">姓名/昵称</th>
+          <th class="col-solved">过题数</th>
+          <th class="col-penalty">罚时</th>
+          <th class="col-prob">7-1</th>
+          <th class="col-prob">7-2</th>
+          <th class="col-prob">7-3</th>
+          <th class="col-prob">7-4</th>
+          <th class="col-prob">7-5</th>
+          <th class="col-prob">7-6</th>
+          <th class="col-prob">7-7</th>
+          <th class="col-prob">7-8</th>
+          <th class="col-prob">7-9</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // XCPCIO 风格的状态渲染 - 整个单元格填充颜色
+    function renderCell(p, problemKey, studentId){
+      if(!p || !p.state) {
+        return '<div class="prob-cell empty"></div>';
+      }
+      
+      if(p.state === 'AC') {
+        const n = (p.n ?? 1);
+        let txt;
+        if(n === 1 && !p.isExplicitOne) {
+          // 原始数据是单纯的 + （一次过，无罚时）
+          txt = '+';
+        } else {
+          // 原始数据是 +1, +2, +3 等（有罚时）
+          txt = '+' + n;
+        }
+        
+        // 检查是否为首个通过者
+        const isFirstBlood = firstBlood[problemKey] && firstBlood[problemKey].studentId === studentId;
+        const cellClass = isFirstBlood ? 'first-solve' : 'correct';
+        
+        const timeDisplay = p.time ? `<div class="time-display">${p.time}</div>` : '';
+        return `<div class="prob-cell ${cellClass}">
+          <div>${txt}</div>
+          ${timeDisplay}
+        </div>`;
+      }
+      
+      if(p.state === 'TRY') {
+        const n = (p.n ?? 1);
+        return `<div class="prob-cell incorrect">
+          <div>-${n}</div>
+        </div>`;
+      }
+      
+      return '<div class="prob-cell empty"></div>';
+    }
+
+    // 解析原始文本（来自图片转写）并生成 rows
+    const raw = `
+1\t20231202055\t李星照\t7\t776\t"+1\n10"\t"+\n116"\t"+\n32"\t"+2\n87"\t"+2\n108"\t"+1\n147"\t-\t-\t"+\n156"\n2\t2305024213\t侯宇轩\t6\t469\t"+\n7"\t"+\n28"\t"+2\n91"\t"+\n81"\t-\t"+4\n67"\t-\t-\t"+1\n55"\n3\t20231202077\t吴桐林\t6\t483\t"+\n4"\t"+\n18"\t"+\n176"\t"+\n36"\t-4\t"+1\n85"\t"+\n144"\t-\t-\n4\t20241202062\t刘武岳\t6\t556\t"+\n8"\t"+\n24"\t"+2\n151"\t"+1\n64"\t-3\t"+1\n108"\t"+\n121"\t-\t-14\n5\t20231105010\t胡睿吉\t6\t556\t"+\n6"\t"+\n20"\t"+1\n38"\t"+3\n126"\t-2\t"+2\n92"\t-\t-\t"+\n154"\n6\t2305024330\t吴圣海\t6\t640\t"+\n10"\t"+\n29"\t"+\n57"\t"+6\n128"\t-\t"+1\n151"\t-\t-\t"+1\n105"\n7\t2305024336\t张嘉然\t6\t655\t"+\n31"\t"+\n39"\t"+6\n81"\t"+\n91"\t-\t"+3\n109"\t-\t-\t"+\n124"\n8\t2305024320\t刘政\t6\t670\t"+\n8"\t"+\n18"\t"+2\n39"\t"+6\n158"\t-\t"+\n95"\t-\t-\t"+3\n132"\n9\t20241202020\t张清钰\t5\t302\t"+\n10"\t"+\n34"\t"+\n44"\t-7\t-2\t"+\n84"\t-\t-\t"+\n130"\n10\t20231205062\t都伊宁\t5\t314\t"+\n7"\t"+\n14"\t"+1\n33"\t-4\t-\t"+2\n67"\t-\t-\t"+1\n113"\n11\t20241202021\t安泽宇\t5\t378\t"+\n11"\t"+\n32"\t"+\n48"\t-3\t-\t"+1\n114"\t-\t-\t"+\n153"\n12\t2405024203\t狄恒羽\t5\t488\t"+\n19"\t"+\n11"\t"+2\n43"\t"+3\n131"\t-\t"+3\n124"\t-\t-\t-1\n13\t2305024220\t李志勃\t4\t144\t"+\n8"\t"+\n31"\t-\t-\t-\t"+\n55"\t"+\n50"\t-\t-\n14\t2405024209\t胡厚辰\t4\t374\t"+\n23"\t"+\n42"\t"+\n64"\t"+4\n165"\t-\t-1\t-\t-\t-\n15\t2405024231\t温慧超\t4\t476\t"+\n10"\t"+\n56"\t"+4\n83"\t-9\t-\t-\t-\t-\t"+5\n147"\n16\t2405024219\t庞嘉欣\t3\t159\t"+\n19"\t"+\n52"\t"+\n88"\t-1\t-\t-\t-\t-\t-\n17\t2305024223\t马朝阳\t3\t178\t"+\n26"\t"+\n17"\t"+4\n55"\t-\t-\t-\t-\t-\t-1\n18\t20241104076\t李心\t3\t297\t"+\n9"\t"+\n20"\t-1\t"+5\n168"\t-\t-3\t-\t-\t-1\n19\t2405024131\t徐生华\t2\t44\t"+\n28"\t"+\n16"\t-3\t-2\t-\t-4\t-\t-\t-2\n20\t2405024204\t董玉清\t2\t51\t"+\n17"\t"+\n34"\t-\t-\t-\t-\t-\t-\t-\n21\t20241202064\t武徐愿\t2\t55\t"+\n15"\t"+\n40"\t-\t-1\t-\t-1\t-\t-\t-\n22\t2305024312\t孔维卓\t2\t60\t"+\n19"\t"+\n41"\t-\t-\t-\t-\t-\t-\t-\n23\t20241202029\t宋雅洁\t2\t72\t"+\n62"\t"+\n10"\t-4\t-\t-\t-\t-\t-\t-\n24\t20231105025\t赵婕\t2\t129\t"+\n27"\t"+\n102"\t-3\t-\t-\t-1\t-\t-\t-\n25\t20241202072\t张舒涵\t2\t150\t"+\n31"\t"+\n119"\t-6\t-\t-\t-9\t-\t-\t-\n26\t20241105047\t程文旭\t2\t151\t"+\n89"\t"+\n62"\t-\t-\t-\t-5\t-\t-\t-\n27\t20241105022\t杨炎森\t1\t16\t"+\n16"\t-\t-2\t-\t-\t-4\t-\t-\t-\n28\t2405024116\t李子蒙\t1\t34\t-\t"+\n34"\t-\t-\t-\t-\t-\t-\t-\n29\t2405024105\t范紫阳\t1\t46\t-\t"+\n46"\t-\t-\t-\t-1\t-\t-\t-\n30\t2405024215\t梁杰\t1\t49\t-\t"+\n49"\t-\t-\t-\t-\t-\t-\t-\n31\t20240504031\t栗妍妍\t1\t53\t-1\t-\t-\t"+\n53"\t-\t-\t-\t-\t-\n32\t20241105018\t陈诗怡\t1\t54\t"+\n54"\t-\t-\t-\t-\t-1\t-\t-\t-\n33\t20241105023\t李睿妍\t1\t59\t-2\t"+\n59"\t-\t-\t-\t-\t-\t-\t-\n34\t2405024118\t刘学涵\t0\t0\t-1\t-\t-1\t-\t-\t-\t-\t-\t-\n35\t20231204045\t杨浩聪\t0\t0\t-\t-\t-\t-\t-\t-1\t-\t-\t-`;
+
+    const problemKeys = ['7-1','7-2','7-3','7-4','7-5','7-6','7-7','7-8','7-9'];
+
+    function parseRows(rawText){
+      const cleaned = rawText.replace(/\"/g, '"').replace(/"/g, '').trim();
+      const tokens = cleaned.split(/\s+/).filter(Boolean);
+      const rows = [];
+      let i = 0;
+      function isInt(s){ return /^-?\d+$/.test(s); }
+      function parseProb(){
+        if(i >= tokens.length) return {state:'NONE'};
+        let t = tokens[i++];
+        // skip stray numbers (in case of misalignment)
+        // but we expect a symbol first; handle states
+        if(t === '-') return {state:'NONE'};
+        if(/^-(\d+)$/.test(t)) return {state:'TRY', n: Math.abs(parseInt(t.slice(1),10))};
+        if(t[0] === '+'){
+          let m = t.match(/^\+(\d+)?$/);
+          let n = m && m[1] ? parseInt(m[1],10) : 1;
+          let isExplicitOne = (t === '+1'); // 区分 + 和 +1
+          // Check for time token (pure number) and capture it
+          let time = null;
+          if(i < tokens.length && isInt(tokens[i])) {
+            time = tokens[i++];
+          }
+          return {state:'AC', n, time, isExplicitOne};
+        }
+        // If we encounter a pure number unexpectedly, treat as time for previous cell: skip and recurse
+        if(isInt(t)) return parseProb();
+        // fallback
+        return {state:'NONE'};
+      }
+      while(i < tokens.length){
+        const rankTok = tokens[i++];
+        if(!isInt(rankTok)) break;
+        const rank = parseInt(rankTok,10);
+        const id = tokens[i++];
+        const name = tokens[i++];
+        const solved = parseInt(tokens[i++]||'0',10);
+        const penalty = parseInt(tokens[i++]||'0',10);
+        const probs = {};
+        for(const k of problemKeys){
+          probs[k] = parseProb();
+        }
+        rows.push({rank,id,name,solved,penalty,probs});
+      }
+      return rows;
+    }
+
+    const rows = parseRows(raw);
+
+    // 计算每道题目的首个通过者 (First Blood)
+    function calculateFirstBlood(rows) {
+      const firstBlood = {}; // {problemKey: {studentId, time}}
+      
+      problemKeys.forEach(key => {
+        let earliest = null;
+        
+        rows.forEach((row, idx) => {
+          const prob = row.probs?.[key];
+          if (prob && prob.state === 'AC' && prob.time) {
+            const time = parseInt(prob.time);
+            if (!earliest || time < earliest.time) {
+              earliest = {
+                studentId: row.id,
+                time: time,
+                rowIndex: idx
+              };
+            }
+          }
+        });
+        
+        if (earliest) {
+          firstBlood[key] = earliest;
+        }
+      });
+      
+      return firstBlood;
+    }
+    
+    const firstBlood = calculateFirstBlood(rows);
+
+  // problemKeys is defined above
+
+    function render() {
+      const tbody = document.querySelector('#standings tbody');
+      tbody.innerHTML = rows.map((r, rowIndex) => {
+        // 检查是否是严格的10位纯数字学号
+        const idStr = String(r.id || '').trim();
+        const isSpecialStudent = idStr.length === 10 && /^\d{10}$/.test(idStr);
+        const rowClass = isSpecialStudent ? ' class="special-highlight"' : '';
+        
+        return `
+        <tr${rowClass}>
+          <td class="col-rank">${r.rank}</td>
+          <td class="col-id">${r.id}</td>
+          <td class="col-name">${r.name}</td>
+          <td class="col-solved">${r.solved}</td>
+          <td class="col-penalty">${r.penalty}</td>
+          ${problemKeys.map(k => `<td class="col-prob">${renderCell(r.probs?.[k], k, r.id)}</td>`).join('')}
+        </tr>
+      `}).join('');
+    }
+
+    render();
+  </script>
+</body>
+</html>
